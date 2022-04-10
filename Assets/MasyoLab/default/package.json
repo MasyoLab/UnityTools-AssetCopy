@@ -1,0 +1,17 @@
+{
+  "name": "com.masyo-lab.unity-tool-template",
+  "displayName": "unity tool template",
+  "version": "x.x.x",
+  "unity": "2019.4",
+  "description": "MIT License\nCopyright (c) 2022 MasyoLab",
+  "author": {
+    "name": "MasyoLab",
+    "email": "masyo.lab@gmail.com",
+    "url": "https://github.com/MasyoLab"
+  },
+  "keywords": [
+    "masyolab",
+    "masyo lab"
+  ],
+  "dependencies": {}
+}
