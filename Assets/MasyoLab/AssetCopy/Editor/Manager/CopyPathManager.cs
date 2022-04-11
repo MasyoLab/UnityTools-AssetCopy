@@ -22,7 +22,7 @@ namespace MasyoLab.Editor.AssetCopy {
         private List<CopyPathData> _datas = new List<CopyPathData>();
         public IReadOnlyList<CopyPathData> Datas => _datas;
         private GUIStyle _textFieldStyle = null;
-        public bool IsApply { private set; get; } = false;
+        public bool IsApply { set; get; } = false;
         public bool IsDisabledApply => !IsApply;
         public bool IsNowCopy { private set; get; } = false;
         public bool IsDisabledOperatable => !IsNowCopy;
@@ -150,12 +150,6 @@ namespace MasyoLab.Editor.AssetCopy {
                 throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
             }
 
-            // Cache directories before we start copying
-            DirectoryInfo[] dirs = dir.GetDirectories();
-
-            // Create the destination directory
-            Directory.CreateDirectory(destinationDir);
-
             // Get the files in the source directory and copy to the destination directory
             foreach (FileInfo file in dir.GetFiles()) {
                 string targetFilePath = Path.Combine(destinationDir, file.Name);
@@ -165,9 +159,16 @@ namespace MasyoLab.Editor.AssetCopy {
 
             // If recursive and copying subdirectories, recursively call this method
             if (recursive) {
+                // Cache directories before we start copying
+                DirectoryInfo[] dirs = dir.GetDirectories();
+
                 foreach (DirectoryInfo subDir in dirs) {
                     try {
                         string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+
+                        // Create the destination directory
+                        Directory.CreateDirectory(newDestinationDir);
+
                         await CopyDirectoryAsync(subDir.FullName, newDestinationDir, true);
                     }
                     catch (DirectoryNotFoundException dirEx) {

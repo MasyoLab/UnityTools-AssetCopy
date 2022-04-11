@@ -58,6 +58,7 @@ namespace MasyoLab.Editor.AssetCopy {
 
         // 入れ替え時に呼び出す
         void Changed(ReorderableList list) {
+            _pipeline.CopyPathManager.IsApply = true;
         }
 
         void AddCallback(ReorderableList list) {
