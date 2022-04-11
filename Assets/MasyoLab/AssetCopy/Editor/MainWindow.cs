@@ -48,6 +48,10 @@ namespace MasyoLab.Editor.AssetCopy {
             _guiWindow.OnGUI();
         }
 
+        void Update() {
+            _guiWindow?.Update();
+        }
+
         _Ty GetWindowClass<_Ty>() where _Ty : BaseWindow, new() {
             if (_guiWindow is _Ty) {
                 return _guiWindow as _Ty;

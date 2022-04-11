@@ -22,6 +22,7 @@ namespace MasyoLab.Editor.AssetCopy {
         }
 
         public virtual void OnGUI() { }
+        public virtual void Update() { }
         public virtual void Reload() { }
         public virtual void Close() { }
 

@@ -38,6 +38,10 @@ namespace MasyoLab.Editor.AssetCopy {
             _reorderableList.elementHeight = CONST.GUI_ITEM_SIZE_HEIGHT * 3;
         }
 
+        public override void Update() {
+            _pipeline.CopyPathManager.DisplayProgressBar();
+        }
+
         public override void OnGUI() {
             EditorGUI.BeginDisabledGroup(_pipeline.CopyPathManager.IsNowCopy);
 
@@ -91,6 +95,14 @@ namespace MasyoLab.Editor.AssetCopy {
 
                 if (GUILayout.Button("Add", EditorStyles.miniButton)) {
                     _pipeline.CopyPathManager.Add();
+                }
+
+                if (GUILayout.Button("All Copy", EditorStyles.miniButton)) {
+                    _pipeline.CopyPathManager.CopyAll();
+                }
+
+                if (GUILayout.Button("All Remove", EditorStyles.miniButton)) {
+                    _pipeline.CopyPathManager.RemoveAll();
                 }
 
                 GUILayout.FlexibleSpace();
