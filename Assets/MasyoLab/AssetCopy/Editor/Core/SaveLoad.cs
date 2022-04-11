@@ -69,7 +69,7 @@ namespace MasyoLab.Editor.AssetCopy {
             directory = directory == string.Empty ? CONST.ASSETS : directory;
 
             // ファイルパス
-            var filePath = EditorUtility.OpenFolderPanel("Select", directory, string.Empty);
+            var filePath = EditorUtility.OpenFolderPanel(CONST.SELECT, directory, string.Empty);
             if (string.IsNullOrEmpty(filePath)) {
                 return false;
             }

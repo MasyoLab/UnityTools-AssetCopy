@@ -40,7 +40,7 @@ namespace MasyoLab.Editor.AssetCopy {
 
         public string DestinationDirectory {
             get {
-                return Application.dataPath.TrimEnd("Asset".ToCharArray()) + AssetDatabase.GUIDToAssetPath(FolderGUID);
+                return FolderAsset == null ? string.Empty : Application.dataPath.TrimEnd(CONST.ASSETS.ToCharArray()) + AssetDatabase.GUIDToAssetPath(FolderGUID);
             }
         }
 

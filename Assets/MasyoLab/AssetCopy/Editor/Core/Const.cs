@@ -22,6 +22,7 @@ namespace MasyoLab.Editor.AssetCopy {
         public const string JSON_EXT = "assetcopy";
         public const string SAVE = "Save";
         public const string LOAD = "Load";
+        public const string SELECT = "Select";
         public const string ASSETS = "Assets";
         public const string LIBRARY = "Library";
         public static string FOLDER_NAME => $"{DEVELOPER}@{EDITOR_WINDOW_NAME}";

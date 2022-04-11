@@ -69,7 +69,7 @@ namespace MasyoLab.Editor.AssetCopy {
         }
 
         void DrawElement(Rect rect, int index, bool isActive, bool isFocused) {
-            _pipeline.CopyPathManager.Draw(rect, index);
+            _pipeline.CopyPathManager.GUIDrawItem(rect, index);
         }
 
         void NoneElement(Rect rect) {

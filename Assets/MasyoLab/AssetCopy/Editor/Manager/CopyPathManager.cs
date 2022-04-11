@@ -26,6 +26,8 @@ namespace MasyoLab.Editor.AssetCopy {
         public bool IsDisabledApply => !IsApply;
         public bool IsNowCopy { private set; get; } = false;
         public bool IsDisabledOperatable => !IsNowCopy;
+        private Stack<CopyPathData> _stack = new Stack<CopyPathData>();
+        private List<CopyPathData> _remove = new List<CopyPathData>();
 
         public CopyPathManager(IPipeline pipeline) : base(pipeline) {
             _textFieldStyle = new GUIStyle(EditorStyles.textField) {
@@ -44,76 +46,84 @@ namespace MasyoLab.Editor.AssetCopy {
 
             CopyDirectory();
 
-            var count = _datas.RemoveAll(v => v.IsRemove);
-            if (count != 0) {
+            if (_remove.Count != 0) {
+                _datas.RemoveAll(v => v.IsRemove);
+                _remove.Clear();
                 IsApply = true;
             }
         }
 
-        public void Draw(Rect rect, int index) {
+        public void GUIDrawItem(Rect rect, int index) {
             var item = Datas[index];
+            GUIItemLine1(rect, item);
+            GUIItemLine2(rect, item);
+            GUIItemLine3(rect, item);
+        }
 
-            {
-                var btnSizeW = 25f;
-                var size = rect;
-                size.height = CONST.GUI_ITEM_SIZE_HEIGHT;
-                size.height -= 2;
-                size.y += 1;
-                size.width -= btnSizeW;
-                var sourceDirectory = EditorGUI.TextField(size, "Source Directory", item.SourceDirectory, _textFieldStyle);
-                if (item.SourceDirectory != sourceDirectory) {
-                    item.SourceDirectory = sourceDirectory;
-                    IsApply = true;
-                }
+        private static Rect RectAdjustment(Rect rect, int line) {
+            var size = rect;
+            size.height = CONST.GUI_ITEM_SIZE_HEIGHT;
+            size.y += CONST.GUI_ITEM_SIZE_HEIGHT * Mathf.Max(0, line - 1);
+            size.height -= 1;
+            size.y += 1;
+            return size;
+        }
 
-                size.x += size.width;
-                size.width = btnSizeW;
-                if (GUI.Button(size, "...")) {
-                    SaveLoad.LoadFolder(item.SourceDirectory, (success) => {
-                        if (item.SourceDirectory != success) {
-                            item.SourceDirectory = success;
-                            IsApply = true;
-                        }
-                    });
-                }
+        private void GUIItemLine1(Rect rect, CopyPathData item) {
+            var size = RectAdjustment(rect, 1);
+
+            var btnSizeW = 25f;
+            var anchor = 1f;
+            size.width -= (btnSizeW + anchor);
+            var sourceDirectory = EditorGUI.TextField(size, "Source Directory", item.SourceDirectory, _textFieldStyle);
+            if (item.SourceDirectory != sourceDirectory) {
+                item.SourceDirectory = sourceDirectory;
+                IsApply = true;
             }
 
-            {
-                var size = rect;
-                size.height = CONST.GUI_ITEM_SIZE_HEIGHT;
-                size.y += CONST.GUI_ITEM_SIZE_HEIGHT;
-                size.height -= 2;
-                size.y += 1;
-
-                var obj = EditorGUI.ObjectField(size, item.FolderAsset, typeof(DefaultAsset), false);
-                if (item.FolderAsset != obj) {
-                    var path = AssetDatabase.GetAssetPath(obj);
-                    if (AssetDatabase.IsValidFolder(path)) {
-                        if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out string folder, out long _)) {
-                            item.FolderGUID = folder;
-                            item.FolderAsset = obj;
-                            IsApply = true;
-                        }
+            size.x += (size.width + anchor);
+            size.width = btnSizeW;
+            if (GUI.Button(size, "...")) {
+                SaveLoad.LoadFolder(item.SourceDirectory, (success) => {
+                    if (item.SourceDirectory != success) {
+                        item.SourceDirectory = success;
+                        IsApply = true;
                     }
-                }
+                });
+            }
+        }
+
+        private void GUIItemLine2(Rect rect, CopyPathData item) {
+            var size = RectAdjustment(rect, 2);
+            var obj = EditorGUI.ObjectField(size, "Destination Directory", item.FolderAsset, typeof(DefaultAsset), false);
+            if (item.FolderAsset == obj) {
+                return;
             }
 
-            {
-                var size = rect;
-                size.height = CONST.GUI_ITEM_SIZE_HEIGHT;
-                size.y += CONST.GUI_ITEM_SIZE_HEIGHT * 2;
-                size.height -= 2;
-                size.y += 1;
-                size.width = size.width / 2;
+            if (!AssetDatabase.IsValidFolder(AssetDatabase.GetAssetPath(obj))) {
+                return;
+            }
 
-                if (GUI.Button(size, "Copy")) {
-                    item.IsCopy = true;
-                }
+            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out string folder, out long _)) {
+                item.FolderGUID = folder;
+                item.FolderAsset = obj;
+                IsApply = true;
+            }
+        }
 
-                size.x += size.width;
-                if (GUI.Button(size, "Remove")) {
-                    item.IsRemove = true;
-                }
+        private void GUIItemLine3(Rect rect, CopyPathData item) {
+            var size = RectAdjustment(rect, 3);
+            size.width /= 2f;
+
+            if (GUI.Button(size, "Copy")) {
+                item.IsCopy = true;
+                _stack.Push(item);
+            }
+
+            size.x += size.width;
+            if (GUI.Button(size, "Remove")) {
+                item.IsRemove = true;
+                _remove.Add(item);
             }
         }
 
@@ -124,13 +134,11 @@ namespace MasyoLab.Editor.AssetCopy {
         /// <param name="sourceDir"></param>
         /// <param name="destinationDir"></param>
         /// <param name="recursive"></param>
-        private static async Task CopyDirectoryAsync(string sourceDir, string destinationDir, bool recursive, System.Action resect) {
+        private static async Task CopyDirectoryAsync(string sourceDir, string destinationDir, bool recursive) {
             if (!Directory.Exists(sourceDir)) {
-                resect.Invoke();
                 throw new DirectoryNotFoundException($"Source directory not found: {sourceDir}");
             }
-            if (!Directory.Exists(sourceDir)) {
-                resect.Invoke();
+            if (!Directory.Exists(destinationDir)) {
                 throw new DirectoryNotFoundException($"Destination directory not found: {destinationDir}");
             }
 
@@ -139,7 +147,6 @@ namespace MasyoLab.Editor.AssetCopy {
 
             // Check if the source directory exists
             if (!dir.Exists) {
-                resect.Invoke();
                 throw new DirectoryNotFoundException($"Source directory not found: {dir.FullName}");
             }
 
@@ -159,27 +166,43 @@ namespace MasyoLab.Editor.AssetCopy {
             // If recursive and copying subdirectories, recursively call this method
             if (recursive) {
                 foreach (DirectoryInfo subDir in dirs) {
-                    string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
-                    await CopyDirectoryAsync(subDir.FullName, newDestinationDir, true, resect);
+                    try {
+                        string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+                        await CopyDirectoryAsync(subDir.FullName, newDestinationDir, true);
+                    }
+                    catch (DirectoryNotFoundException dirEx) {
+                        throw dirEx;
+                    }
                 }
             }
         }
 
         private async void CopyDirectory() {
+            if (IsNowCopy) {
+                return;
+            }
+
             bool isUpdate = false;
-            foreach (var item in _datas) {
-                if (!item.IsCopy) {
+
+            if (_stack.Count != 0) {
+                IsNowCopy = true;
+                await Task.Delay(1000);
+            }
+
+            for (; _stack.Count != 0;) {
+                var item = _stack.Pop();
+
+                try {
+                    await CopyDirectoryAsync(item.SourceDirectory, item.DestinationDirectory, true);
+                }
+                catch (DirectoryNotFoundException dirEx) {
+                    item.IsCopy = false;
+                    item.IsRemove = false;
+                    Debug.LogError(dirEx);
                     continue;
                 }
 
-                IsNowCopy = true;
-
-                await CopyDirectoryAsync(item.SourceDirectory, item.DestinationDirectory, true, () => {
-                    item.IsCopy = false;
-                    item.IsRemove = false;
-                });
-                Console.WriteLine("ファイルがコピーされました");
-                Console.ReadKey();
+                Debug.Log("ファイルがコピーされました");
                 item.IsCopy = false;
                 item.IsRemove = false;
                 isUpdate = true;
@@ -188,6 +211,7 @@ namespace MasyoLab.Editor.AssetCopy {
             if (isUpdate) {
                 AssetDatabase.Refresh();
             }
+
             IsNowCopy = false;
         }
 
