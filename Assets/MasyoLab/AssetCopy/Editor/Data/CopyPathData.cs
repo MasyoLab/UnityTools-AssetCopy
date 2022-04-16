@@ -44,16 +44,16 @@ namespace MasyoLab.Editor.AssetCopy {
             }
         }
 
-        private Object _folderAsset { get; set; } = null;
+        private Object m_folderAsset { get; set; } = null;
         public Object FolderAsset {
             set {
-                _folderAsset = value;
+                m_folderAsset = value;
             }
             get {
-                if (_folderAsset == null) {
-                    _folderAsset = GetFolderAsset();
+                if (m_folderAsset == null) {
+                    m_folderAsset = GetFolderAsset();
                 }
-                return _folderAsset;
+                return m_folderAsset;
             }
         }
         public bool IsUnity {
@@ -62,7 +62,6 @@ namespace MasyoLab.Editor.AssetCopy {
             }
         }
         public bool IsRemove { get; set; } = false;
-        public bool IsCopy { get; set; } = false;
 
         private Object GetFolderAsset() {
             // GUIDでパスを取得
@@ -85,7 +84,7 @@ namespace MasyoLab.Editor.AssetCopy {
     class CopyPathDataJson {
 
         [SerializeField]
-        private List<CopyPathData> d;
+        private List<CopyPathData> d = new List<CopyPathData>();
 
         public static string ToJson(IReadOnlyList<CopyPathData> copyPaths) {
             return JsonUtility.ToJson(new CopyPathDataJson {
@@ -94,7 +93,11 @@ namespace MasyoLab.Editor.AssetCopy {
         }
 
         public static List<CopyPathData> FromJson(string jsonData) {
-            return JsonUtility.FromJson<CopyPathDataJson>(jsonData).d;
+            var copyPathDataJson = JsonUtility.FromJson<CopyPathDataJson>(jsonData);
+            if (copyPathDataJson == null) {
+                return new List<CopyPathData>();
+            }
+            return copyPathDataJson.d;
         }
     }
 }

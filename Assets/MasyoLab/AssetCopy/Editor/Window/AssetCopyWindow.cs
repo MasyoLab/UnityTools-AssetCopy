@@ -16,99 +16,98 @@ namespace MasyoLab.Editor.AssetCopy {
 
     class AssetCopyWindow : BaseWindow {
 
-        ReorderableList _reorderableList = null;
-        static Vector2 _scrollVec2;
+        private ReorderableList m_reorderableList = null;
+        private static Vector2 m_scrollVec2;
 
         public override void Init(IPipeline pipeline) {
             base.Init(pipeline);
             InitGUI();
         }
 
-        void InitGUI() {
-            _reorderableList = _pipeline.CopyPathManager.CreateReorderableList();
-            _reorderableList.drawElementCallback = DrawElement;
-            _reorderableList.onChangedCallback = Changed;
-            _reorderableList.drawHeaderCallback = DrawHeader;
-            _reorderableList.onAddCallback = AddCallback;
-            _reorderableList.onRemoveCallback = RemoveCallback;
-            _reorderableList.drawNoneElementCallback = NoneElement;
+        private void InitGUI() {
+            m_reorderableList = m_pipeline.CopyPathManager.CreateReorderableList();
+            m_reorderableList.drawElementCallback = DrawElement;
+            m_reorderableList.onChangedCallback = Changed;
+            m_reorderableList.drawHeaderCallback = DrawHeader;
+            m_reorderableList.onAddCallback = AddCallback;
+            m_reorderableList.onRemoveCallback = RemoveCallback;
+            m_reorderableList.drawNoneElementCallback = NoneElement;
 
-            _reorderableList.headerHeight = 0;
-            _reorderableList.footerHeight = 0;
-            _reorderableList.elementHeight = CONST.GUI_ITEM_SIZE_HEIGHT * 3;
+            m_reorderableList.headerHeight = 0;
+            m_reorderableList.elementHeight = CONST.GUI_ITEM_SIZE_HEIGHT * 3;
         }
 
         public override void Update() {
-            _pipeline.CopyPathManager.DisplayProgressBar();
+            m_pipeline.CopyPathManager.DisplayProgressBar();
         }
 
         public override void OnGUI() {
-            EditorGUI.BeginDisabledGroup(_pipeline.CopyPathManager.IsNowCopy);
+            EditorGUI.BeginDisabledGroup(m_pipeline.CopyPathManager.IsDisabledOperatable);
 
             DrawToolbar();
 
-            _scrollVec2 = GUILayout.BeginScrollView(_scrollVec2);
-            _reorderableList.DoLayoutList();
+            m_scrollVec2 = GUILayout.BeginScrollView(m_scrollVec2);
+            m_reorderableList.DoLayoutList();
             GUILayout.EndScrollView();
 
-            _pipeline.CopyPathManager.Update();
+            m_pipeline.CopyPathManager.Update();
 
             EditorGUI.EndDisabledGroup();
         }
 
-        void DrawHeader(Rect rect) {
+        private void DrawHeader(Rect rect) {
             EditorGUI.LabelField(rect, "");
         }
 
         // 入れ替え時に呼び出す
-        void Changed(ReorderableList list) {
-            _pipeline.CopyPathManager.IsApply = true;
+        private void Changed(ReorderableList list) {
+            m_pipeline.CopyPathManager.IsApply = true;
         }
 
-        void AddCallback(ReorderableList list) {
-            _pipeline.CopyPathManager.Add();
+        private void AddCallback(ReorderableList list) {
+            m_pipeline.CopyPathManager.Add();
         }
 
-        void RemoveCallback(ReorderableList list) {
-            _pipeline.CopyPathManager.Remove(list.index);
+        private void RemoveCallback(ReorderableList list) {
+            m_pipeline.CopyPathManager.Remove(list.index);
         }
 
-        void DrawElement(Rect rect, int index, bool isActive, bool isFocused) {
-            _pipeline.CopyPathManager.GUIDrawItem(rect, index);
+        private void DrawElement(Rect rect, int index, bool isActive, bool isFocused) {
+            m_pipeline.CopyPathManager.GUIDrawItem(rect, index);
         }
 
-        void NoneElement(Rect rect) {
+        private void NoneElement(Rect rect) {
             EditorGUI.LabelField(rect, "Empty");
         }
 
-        void DrawToolbar() {
+        private void DrawToolbar() {
+
             using (new EditorGUILayout.HorizontalScope()) {
-                EditorGUI.BeginDisabledGroup(_pipeline.CopyPathManager.IsDisabledApply);
+                EditorGUI.BeginDisabledGroup(m_pipeline.CopyPathManager.IsDisabledApply);
                 if (GUILayout.Button(new GUIContent(EditorGUIUtility.IconContent(CONST.REFRESH).image), EditorStyles.miniButton)) {
-                    _pipeline.CopyPathManager.Load();
+                    m_pipeline.CopyPathManager.Load();
                     InitGUI();
                 }
                 if (GUILayout.Button("Apply", EditorStyles.miniButton)) {
-                    _pipeline.CopyPathManager.Save();
+                    m_pipeline.CopyPathManager.Save();
                 }
                 EditorGUI.EndDisabledGroup();
 
                 if (GUILayout.Button("Add", EditorStyles.miniButton)) {
-                    _pipeline.CopyPathManager.Add();
+                    m_pipeline.CopyPathManager.Add();
                 }
 
                 if (GUILayout.Button("All Copy", EditorStyles.miniButton)) {
-                    _pipeline.CopyPathManager.CopyAll();
+                    m_pipeline.CopyPathManager.CopyAll();
                 }
 
                 if (GUILayout.Button("All Remove", EditorStyles.miniButton)) {
-                    _pipeline.CopyPathManager.RemoveAll();
+                    m_pipeline.CopyPathManager.RemoveAll();
                 }
 
                 GUILayout.FlexibleSpace();
             }
         }
-
     }
 }
 #endif

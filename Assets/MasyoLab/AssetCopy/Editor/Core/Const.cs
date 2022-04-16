@@ -19,7 +19,9 @@ namespace MasyoLab.Editor.AssetCopy {
         public const string EDITOR_WINDOW_NAME = "AssetCopy";
         public const string MENU_ITEM = "Tools/" + EDITOR_WINDOW_NAME;
         public const string UNITY_EXT = ".unity";
-        public const string JSON_EXT = "assetcopy";
+        public const string FILE_EXTENSION = "assetcopy";
+        public const string COPY_FILE_NAME = "assetcopy";
+        public const string COPY_SETTING_FILE_NAME = "copy_setting";
         public const string SAVE = "Save";
         public const string LOAD = "Load";
         public const string SELECT = "Select";

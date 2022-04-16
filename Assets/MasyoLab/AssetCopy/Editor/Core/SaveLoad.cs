@@ -45,7 +45,7 @@ namespace MasyoLab.Editor.AssetCopy {
             directory = directory == string.Empty ? CONST.ASSETS : directory;
 
             // ファイルパス
-            var filePath = EditorUtility.SaveFilePanel(CONST.SAVE, directory, filename, CONST.JSON_EXT);
+            var filePath = EditorUtility.SaveFilePanel(CONST.SAVE, directory, filename, CONST.FILE_EXTENSION);
             if (string.IsNullOrEmpty(filePath)) {
                 return;
             }
@@ -57,7 +57,7 @@ namespace MasyoLab.Editor.AssetCopy {
             directory = directory == string.Empty ? CONST.ASSETS : directory;
 
             // ファイルパス
-            var filePath = EditorUtility.OpenFilePanel(CONST.LOAD, directory, CONST.JSON_EXT);
+            var filePath = EditorUtility.OpenFilePanel(CONST.LOAD, directory, CONST.FILE_EXTENSION);
             if (string.IsNullOrEmpty(filePath)) {
                 return string.Empty;
             }
@@ -82,7 +82,7 @@ namespace MasyoLab.Editor.AssetCopy {
         /// 保存先
         /// </summary>
         /// <returns></returns>
-        public static string GetSaveDataPath(string fileName, string ext = CONST.JSON_EXT) {
+        public static string GetSaveDataPath(string fileName, string ext = CONST.FILE_EXTENSION) {
             var filePath = $"{UnityEngine.Application.dataPath.RemoveAtLast(CONST.ASSETS)}{CONST.LIBRARY}/{CONST.FOLDER_NAME}";
 
             if (!System.IO.File.Exists(filePath)) {

@@ -15,64 +15,103 @@ namespace MasyoLab.Editor.AssetCopy {
 
     class MainWindow : EditorWindow {
 
-        class Pipeline : IPipeline {
+        private class Pipeline : IPipeline {
             public EditorWindow Root { get; set; } = null;
             public Rect WindowSize { get; set; } = Rect.zero;
 
-            private CopyPathManager _copyPathManager = null;
-
+            private CopyPathManager m_copyPathManager = null;
             public CopyPathManager CopyPathManager {
                 get {
-                    if (_copyPathManager == null) {
-                        _copyPathManager = new CopyPathManager(this);
+                    if (m_copyPathManager == null) {
+                        m_copyPathManager = new CopyPathManager(this);
                     }
-                    return _copyPathManager;
+                    return m_copyPathManager;
+                }
+            }
+
+            private CopySettingManager m_copySettingManager = null;
+            public CopySettingManager CopySettingManager {
+                get {
+                    if (m_copySettingManager == null) {
+                        m_copySettingManager = new CopySettingManager(this);
+                    }
+                    return m_copySettingManager;
                 }
             }
         }
 
-        BaseWindow _guiWindow = null;
-        List<BaseWindow> _windows = new List<BaseWindow>();
-        Pipeline _pipeline = new Pipeline();
+        private BaseWindow m_guiWindow = null;
+        private List<BaseWindow> m_windows = new List<BaseWindow>();
+        private Pipeline m_pipeline = new Pipeline();
 
         /// <summary>
         /// ウィンドウを追加
         /// </summary>
         [MenuItem(CONST.MENU_ITEM)]
-        static void Init() {
+        private static void Init() {
             GetWindow<MainWindow>(CONST.EDITOR_WINDOW_NAME);
         }
 
-        void OnGUI() {
-            GetWindowClass<AssetCopyWindow>();
-            _guiWindow.OnGUI();
+        private void OnGUI() {
+            DrawToolbar();
+            if (m_guiWindow == null) {
+                GetWindowClass<AssetCopyWindow>();
+            }
+            m_pipeline.WindowSize = new Rect(0, EditorStyles.toolbar.fixedHeight, position.width, position.height - EditorStyles.toolbar.fixedHeight);
+            m_guiWindow.OnGUI();
         }
 
-        void Update() {
-            _guiWindow?.Update();
+        private void Update() {
+            m_guiWindow?.Update();
         }
 
-        _Ty GetWindowClass<_Ty>() where _Ty : BaseWindow, new() {
-            if (_guiWindow is _Ty) {
-                return _guiWindow as _Ty;
+        private void DrawToolbar() {
+            using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar)) {
+                if (GUILayout.Button(new GUIContent("Menu"), EditorStyles.toolbarDropDown)) {
+                    OpenMenu();
+                }
+                if (GUILayout.Button(new GUIContent("Home"), EditorStyles.toolbarButton)) {
+                    GetWindowClass<AssetCopyWindow>();
+                }
+                GUILayout.FlexibleSpace();
+            }
+        }
+
+        private void OpenMenu() {
+            // Now create the menu, add items and show it
+            var menu = new GenericMenu();
+
+            menu.AddItem(new GUIContent("Copy Setting"), false, (call) => {
+                GetWindowClass<CopySettingWindow>();
+            }, "Setting");
+
+            menu.AddItem(new GUIContent("Help"), false, (call) => {
+            }, "Help");
+
+            menu.DropDown(new Rect(0, EditorStyles.toolbar.fixedHeight, 0f, 0f));
+        }
+
+        private _Ty GetWindowClass<_Ty>() where _Ty : BaseWindow, new() {
+            if (m_guiWindow is _Ty) {
+                return m_guiWindow as _Ty;
             }
 
-            foreach (var item in _windows) {
+            foreach (var item in m_windows) {
                 if (!(item is _Ty)) {
                     continue;
                 }
-                item.Init(_pipeline);
-                _guiWindow?.Close();
-                _guiWindow = item;
+                item.Init(m_pipeline);
+                m_guiWindow?.Close();
+                m_guiWindow = item;
                 return item as _Ty;
             }
 
-            var newWin = new _Ty();
-            newWin.Init(_pipeline);
-            _windows.Add(newWin);
-            _guiWindow?.Close();
-            _guiWindow = newWin;
-            return newWin;
+            var newWindow = new _Ty();
+            newWindow.Init(m_pipeline);
+            m_windows.Add(newWindow);
+            m_guiWindow?.Close();
+            m_guiWindow = newWindow;
+            return newWindow;
         }
     }
 }

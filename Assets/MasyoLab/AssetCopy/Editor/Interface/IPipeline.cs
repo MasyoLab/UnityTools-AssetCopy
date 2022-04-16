@@ -12,6 +12,7 @@ using UnityEngine;
 namespace MasyoLab.Editor.AssetCopy {
     interface IPipeline {
         CopyPathManager CopyPathManager { get; }
+        CopySettingManager CopySettingManager { get; }
         EditorWindow Root { get; }
         Rect WindowSize { get; }
     }
